@@ -131,13 +131,21 @@ void deleter(int* primary, int* secondary, int* cmd, struct row*** versioni, int
     }
 }
 
-void undo(){
+void undo(int* actual, int* virtual){
+    if(virtual[0]>=0) actual[0] = virtual[0];
+    else actual[0] = -1;
     return;
 }
 
-void libera(){
+void redo(int* actual, int* virtual, int* max){
+    if(virtual[0]>=max[0]) actual[0] = max[0];
+    else actual[0] = virtual[0];
     return;
 }
+
+//struct row* libera(){
+//    return;
+//}
 
 int main () {
     
@@ -172,46 +180,52 @@ int main () {
 
     int virtual[1];
     virtual[0]=-1;
+    bool u = false;
+    int max[1];
+    max[0]=countcmd[0];
 
     const char delim[] = ", c d p u r"; 
     fgets(input, sizeof(input), stdin);
     while(strcmp(input, "q\n")!=0){
         cmd[0]=input[strlen(input)-2];
         while((cmd[0]=='u')||(cmd[0]=='r')){
-            if(virtual[0]==-1) break;
+            if(!u) break;
             estraiUno(input, delim, primary);
             if(cmd[0]=='u') virtual[0]=virtual[0]+primary[0];
             else virtual[0]=virtual[0]-primary[0];
+            u=true;
             fgets(input, sizeof(char)*INPUTLENGHT, stdin);
         }
         if(cmd[0]=='c'){ //change
-            if(virtual[0]<countcmd[0]){
-                undo();
-                libera();
-                countcmd[0] = virtual[0];
+            if(u){
+                undo(countcmd, virtual);
+                //tail = libera();
+                u = false;
             }
             estraiDue(input, delim, primary, secondary);
             tail = changer(primary, secondary, countcmd, tail, versioni, sizeVersion, countRow);
             fgets(dot, sizeof(char)*2, stdin); //termino con punto, solo per scorrere gli input   
-            virtual[0] = countcmd[0]; 
+            virtual[0] = countcmd[0];
+            max[0] =  countcmd[0];
             //printf("Change finita\n");       
         }
         else if (cmd[0]=='d'){ //delete
-            if(virtual[0]<countcmd[0]){
-                undo();
-                libera();
-                countcmd[0] = virtual[0];
+            if(u){
+                undo(countcmd, virtual);
+                //tail = libera(); NON SERVE
+                u = false;
             }
             estraiDue(input, delim, primary, secondary);
             deleter(primary, secondary, countcmd, versioni, sizeVersion, countRow);
             virtual[0] = countcmd[0]; 
+            max[0] =  countcmd[0];
         }
         else if (cmd[0]=='p'){ //print
             if(virtual[0]<countcmd[0]){
-                undo();
+                undo(countcmd, virtual);
             }
             else if (virtual[0]>countcmd[0]){
-                redo();//al massimo torno a countcmd
+                redo(countcmd, virtual, max);//al massimo torno a countcmd
             }
             estraiDue(input, delim, primary, secondary);
             printer(primary, secondary, countcmd, versioni, countRow);
