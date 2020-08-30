@@ -77,6 +77,10 @@ struct row* changer(int* primary, int* secondary, int* cmd, struct row* tail, st
             for(short i=0; i<primary[0];i++){
                 versioni[cmd[0]][i] = versioni[cmd[0]-1][i];
             }
+            //vanno caricate anche quelle dopo secondary
+            for(short i=secondary[0]; i<rowDim[cmd[0]]; i++){
+                versioni[cmd[0]][i] = versioni[cmd[0]-1][i];
+            }            
         }
         else{
             rowDim[cmd[0]] = secondary[0];
