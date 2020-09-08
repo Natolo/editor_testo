@@ -14,10 +14,10 @@ struct row{
     struct row* prev;
 };
 
-#define INPUTLENGHT   32
-#define ROWLENGHT   1024
-//int c=0;
- 
+#define INPUTLENGHT   64
+#define ROWLENGHT   1025
+int c=-1;
+
 void estraiDue(char* input,const char* delim, int* primary, int* secondary){//OK
     char* token = strtok(input, delim);
     primary[0] = atoi(token);
@@ -31,8 +31,27 @@ void estraiUno(char* input,const char* delim, int* primary){//OK
 }
 
 void printer(int* primary, int* secondary, int* cmd, struct row*** versioni, int* rowDim){ 
-    short dist;
-    short out=0;
+    int dist;
+    int out=0;
+    if(primary[0]==0) {
+        printf(".\n");
+        return;
+    }
+    if(c>16000){
+        if(secondary[0]>rowDim[16000]) {
+            dist = rowDim[16000] - primary[0] + 1;
+            out = secondary[0] - rowDim[16000];
+        }
+        else dist = secondary[0] - primary[0] + 1;
+        for(int i=0; i<dist;i++){
+            printf("%s", versioni[16000][primary[0]-1+i]->stringa);
+        }
+        while(out>0){
+            printf(".\n");
+            out--;  
+        }
+        return;  
+    }
     if(primary[0]==0) {
         printf(".\n");
         return;
@@ -51,7 +70,7 @@ void printer(int* primary, int* secondary, int* cmd, struct row*** versioni, int
     }
     else dist = secondary[0] - primary[0] + 1;
     if((rowDim[cmd[0]]!=0)&&(cmd[0]!=-1)){
-        for(short i=0; i<dist;i++){
+        for(int i=0; i<dist;i++){
                 printf("%s", versioni[cmd[0]][primary[0]-1+i]->stringa);
         }
     }
@@ -64,31 +83,37 @@ void printer(int* primary, int* secondary, int* cmd, struct row*** versioni, int
 struct row* changer(int* primary, int* secondary, int* cmd, struct row* tail, struct row**** versioni, int* sizeVersioni, int* countRow, int** rowDim){ 
     struct row* new;
     cmd[0]++;
-    //c++;
-    short dist = secondary[0] - primary[0] + 1;
+    c++;
+    int dist = secondary[0] - primary[0] + 1;
     //creo nuova versione
-    //if(c>25000){
-    //  if(secondary[0]>rowDim[0][25000]){
-    //        rowDim[0][25000] = secondary[0];
-    //        versioni[0][25000] = (struct row**) realloc(versioni[0][25000], sizeof(struct row*)*(rowDim[0][25000]));
-    //        countRow[0]=secondary[0];
-    //    }
-    //    for(short i=0; i<dist;i++){
-    //        //creo nuova riga e la metto in coda, nuova riga ora è la coda.
-    //        new = (struct row*) malloc(sizeof(struct row));
-    //        new->comando = cmd[0];
-    //        new->stringa = (char*) malloc(sizeof(char)*ROWLENGHT);
-    //        if(fgets(new->stringa, sizeof(char)*ROWLENGHT, stdin)!=NULL){
-    //           new->stringa = realloc(new->stringa, sizeof(char)*(strlen(new->stringa)+1));
-    //            new->prev = tail;
-    //            tail->next = new;
-    //            tail = new;
-    //            //metto il puntatore alla nuova riga nella versione, al posto corrispondente
-    //            versioni[0][25000][primary[0]-1+i] = new;
-    //        }
-    //    }            
-    //    return tail;
-    //}
+    if(c>16000){
+        //if(sizeVersioni[0]>16000){
+        //    versioni[0] = (struct row***) realloc(versioni[0], sizeof(struct row**)*(16000+1));
+        //    rowDim[0] = (int*) realloc(rowDim[0], sizeof(int)*(16000+1));
+        //} 
+        if(secondary[0]>rowDim[0][16000]){
+            rowDim[0][16000] = secondary[0];
+            countRow[0]=secondary[0];
+        }
+        //else rowDim[0][5] = rowDim[0][5-1];
+        versioni[0][16000] = (struct row**) realloc(versioni[0][16000], sizeof(struct row*)*(rowDim[0][16000]));
+        //countRow[0]=secondary[0];
+        for(short i=0; i<dist;i++){
+            //creo nuova riga e la metto in coda, nuova riga ora è la coda.
+            new = (struct row*) malloc(sizeof(struct row));
+            new->comando = cmd[0];
+            new->stringa = (char*) malloc(sizeof(char)*ROWLENGHT);
+            if(fgets(new->stringa, sizeof(char)*ROWLENGHT, stdin)!=NULL){
+                new->stringa = realloc(new->stringa, sizeof(char)*(strlen(new->stringa)+1));
+                new->prev = tail;
+                tail->next = new;
+                tail = new;
+                //metto il puntatore alla nuova riga nella versione, al posto corrispondente
+                versioni[0][16000][primary[0]-1+i] = new;
+            }
+        }            
+        return tail;
+    }
     if(cmd[0]!=0){
         //int sizePrev;
         //if(versioni[cmd[0]-1]!=NULL){
@@ -106,11 +131,11 @@ struct row* changer(int* primary, int* secondary, int* cmd, struct row* tail, st
         if(secondary[0]<=rowDim[0][cmd[0]-1]){
             versioni[0][cmd[0]] = (struct row**) malloc(sizeof(struct row*)*(rowDim[0][cmd[0]-1]));
             rowDim[0][cmd[0]] = rowDim[0][cmd[0]-1];
-            for(short i=0; i<primary[0];i++){
+            for(int i=0; i<primary[0];i++){
                 versioni[0][cmd[0]][i] = versioni[0][cmd[0]-1][i];
             }
             //vanno caricate anche quelle dopo secondary
-            for(short i=secondary[0]; i<rowDim[0][cmd[0]]; i++){
+            for(int i=secondary[0]; i<rowDim[0][cmd[0]]; i++){
                 versioni[0][cmd[0]][i] = versioni[0][cmd[0]-1][i];
             }            
         }
@@ -119,7 +144,7 @@ struct row* changer(int* primary, int* secondary, int* cmd, struct row* tail, st
             versioni[0][cmd[0]] = (struct row**) malloc(sizeof(struct row*)*(rowDim[0][cmd[0]]));
             if(primary[0]<rowDim[0][cmd[0]]){ 
                 if(versioni[0][cmd[0]-1]!=NULL){
-                    for(short i=0; i<primary[0];i++){
+                    for(int i=0; i<primary[0];i++){
                         versioni[0][cmd[0]][i] = versioni[0][cmd[0]-1][i];
                     }
                 }
@@ -132,7 +157,7 @@ struct row* changer(int* primary, int* secondary, int* cmd, struct row* tail, st
         countRow[0] = secondary[0];
         rowDim[0][0] = countRow[0];
     }
-    for(short i=0; i<dist;i++){
+    for(int i=0; i<dist;i++){
         //creo nuova riga e la metto in coda, nuova riga ora è la coda.
         new = (struct row*) malloc(sizeof(struct row));
         new->comando = cmd[0];
@@ -151,8 +176,8 @@ struct row* changer(int* primary, int* secondary, int* cmd, struct row* tail, st
 
 void deleter(int* primary, int* secondary, int* cmd, struct row**** versioni, int* sizeVersioni, int* countRow, int** rowDim){
     cmd[0]++;
-    //c++;
-    short dist;
+    int dist;
+    if(c>0) c=0;
     if(cmd[0]==0){
         countRow[0]=0;
         rowDim[0][0]=0;
@@ -175,7 +200,7 @@ void deleter(int* primary, int* secondary, int* cmd, struct row**** versioni, in
     if(primary[0]>rowDim[0][cmd[0]-1]){ //se la del è su righe non presenti 
         rowDim[0][cmd[0]] = rowDim[0][cmd[0]-1];
         versioni[0][cmd[0]] = (struct row **) malloc(sizeof(struct row *)*(rowDim[0][cmd[0]]));
-        for(short i=0; i<rowDim[0][cmd[0]];i++){
+        for(int i=0; i<rowDim[0][cmd[0]];i++){
             versioni[0][cmd[0]][i] = versioni[0][cmd[0]-1][i];
         }
         return;
@@ -197,7 +222,7 @@ void deleter(int* primary, int* secondary, int* cmd, struct row**** versioni, in
         if(countRow[0]==0) versioni[0][cmd[0]] = (struct row**) malloc(sizeof(struct row*));
         else versioni[0][cmd[0]] = (struct row**) malloc(sizeof(struct row*)*rowDim[0][cmd[0]]);
         //for dove copio solo i puntatori che mi interessano
-        for(short i=0; i<rowDim[0][cmd[0]];i++){
+        for(int i=0; i<rowDim[0][cmd[0]];i++){
             if(i<primary[0]-1){
                 versioni[0][cmd[0]][i] = versioni[0][cmd[0]-1][i];
             }
@@ -255,7 +280,7 @@ int main () {
     //array dimensioni
     int* rowDim;
     rowDim = (int*) malloc(sizeVersion[0]*sizeof(int));
-    for(short i=0; i<sizeVersion[0];i++){
+    for(int i=0; i<sizeVersion[0];i++){
         rowDim[i]=0;
     }
     int primary[1]; //modifico questi indici nella matrice delle versioni
@@ -275,11 +300,13 @@ int main () {
             if(cmd[0]=='u') {
                 virtual[0]=virtual[0]-primary[0];
                 if(virtual[0]<0) virtual[0]=-1;
+                if(c>0) c=0;
             }
             else {
                 if(virtual[0]<max[0]) {
                     virtual[0]=virtual[0]+primary[0];
                     if(virtual[0]>max[0]) virtual[0]=max[0];
+                    if(c>0) c=0;
                 }
             }
             u=true;
